@@ -16,16 +16,18 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/blinsay/rss-dl/version"
 )
 
 // TODO(benl): tests
-// TODO(benl): print usage when there's no input
-// TODO(benl): add a version
-// TODO(benl): add a version flag
 
 var (
 	// enable verbose output
 	verbose bool
+
+	// print the printVersion and exit
+	printVersion bool
 
 	// how many parallel downloads to do
 	downloaders int
@@ -61,6 +63,7 @@ func init() {
 	}
 
 	flag.BoolVar(&verbose, "verbose", false, "turn on verbose output")
+	flag.BoolVar(&printVersion, "version", false, "print the version and exit")
 	flag.IntVar(&downloaders, "p", -1, "number of parallel downloads. if 0 or negative, uses 2x the number of available CPUs")
 	flag.StringVar(&downloadDir, "dir", "", "the directory to download files to")
 	flag.StringVar(&tempDir, "tempdir", "", "the directory to use as a temporary directory when downloading files")
@@ -72,6 +75,16 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if printVersion {
+		log.Printf("%s (%s)", version.VERSION, version.GITCOMMIT)
+		return
+	}
+
+	if len(flag.Args()) < 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	if downloadDir == "" {
 		log.Fatalf("oops: please specify a download directory")

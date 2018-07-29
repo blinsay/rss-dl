@@ -1,6 +1,13 @@
 NAME := rss-dl
 PKG := github.com/blinsay/rss-dl
 
+VERSION := $(shell cat VERSION.txt)
+GITCOMMIT := $(shell git describe --always --dirty)
+
+VERSION_FLAGS=-X $(PKG)/version.VERSION=$(VERSION) -X $(PKG)/version.GITCOMMIT=$(GITCOMMIT)
+GO_LDFLAGS=-ldflags "$(VERSION_FLAGS)"
+GO_LDFLAGS_STATIC=-ldflags "$(VERSION_FLAGS) -extldflags -static"
+
 .PHONY: all
 all: clean build fmt lint test unused staticcheck install
 
@@ -13,14 +20,14 @@ clean:
 .PHONY: build
 build: $(NAME)
 
+$(NAME): $(wildcard *.go)
+	@echo "+$@"
+	@go build $(GO_LDFLAGS) -o $(NAME) .
+
 .PHONY: install
 install:
 	@echo "+$@"
-	@go install -a .
-
-$(NAME): $(wildcard *.go)
-	@echo "+$@"
-	@go build -o $(NAME) .
+	@go install -a $(GO_LDFLAGS) .
 
 # deps
 
