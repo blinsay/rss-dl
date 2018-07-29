@@ -2,7 +2,7 @@ NAME := rss-dl
 PKG := github.com/blinsay/rss-dl
 
 VERSION := $(shell cat VERSION.txt)
-GITCOMMIT := $(shell git describe --always --dirty)
+GITCOMMIT := $(shell git rev-parse --short head)
 
 VERSION_FLAGS=-X $(PKG)/version.VERSION=$(VERSION) -X $(PKG)/version.GITCOMMIT=$(GITCOMMIT)
 GO_LDFLAGS=-ldflags "$(VERSION_FLAGS)"
@@ -39,7 +39,7 @@ dep:
 # tests
 
 .PHONY: test
-	@echo "+ $@"
+	@echo "+$@"
 	@go test ./...
 
 # linting and static analysis

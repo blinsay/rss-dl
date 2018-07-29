@@ -2,9 +2,8 @@ package version
 
 var (
 	// VERSION is the current version of the tool
-	VERSION = "version"
+	VERSION = "v0.0.0"
 
-	// GITCOMMIT is the git commit the tool was built at. Will have -dirty
-	// appended to any build made with a repo with uncommitted changes.
-	GITCOMMIT = "git-commit"
+	// GITCOMMIT is the git commit that rss-dl was built at.
+	GITCOMMIT = "go get"
 )
