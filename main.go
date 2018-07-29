@@ -18,6 +18,11 @@ import (
 	"time"
 )
 
+// TODO(benl): tests
+// TODO(benl): print usage when there's no input
+// TODO(benl): add a version
+// TODO(benl): add a version flag
+
 var (
 	// enable verbose output
 	verbose bool
@@ -97,18 +102,18 @@ func main() {
 		go downloadItems(&wg, items)
 	}
 
-	for _, feedUrl := range flag.Args() {
-		fetchFeed(feedUrl, items)
+	for _, feedURL := range flag.Args() {
+		fetchFeed(feedURL, items)
 	}
 	close(items)
 	wg.Wait()
 }
 
-// fetch a feed at feedUrl and shove items into a channel. logs info on error,
+// fetch a feed at feed url and shove items into a channel. logs info on error,
 // but never kills the process so that other feed urls have a chance to get
 // processed.
-func fetchFeed(feedUrl string, items chan<- *item) {
-	request, err := http.NewRequest(http.MethodGet, feedUrl, nil)
+func fetchFeed(feedURL string, items chan<- *item) {
+	request, err := http.NewRequest(http.MethodGet, feedURL, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -118,12 +123,12 @@ func fetchFeed(feedUrl string, items chan<- *item) {
 	request = request.WithContext(ctx)
 
 	resp, err := http.DefaultClient.Do(request)
-	if urlErr, isUrlErr := err.(*url.Error); isUrlErr && urlErr.Timeout() || err == context.DeadlineExceeded {
-		log.Printf("welp: timed out fetching %s", feedUrl)
+	if urlErr, isURLErr := err.(*url.Error); isURLErr && urlErr.Timeout() || err == context.DeadlineExceeded {
+		log.Printf("welp: timed out fetching %s", feedURL)
 		return
 	}
 	if err != nil {
-		log.Printf("welp: couldn't fetch %q", feedUrl)
+		log.Printf("welp: couldn't fetch %q", feedURL)
 		if verbose {
 			log.Printf("\t%s", err)
 		}
@@ -132,13 +137,13 @@ func fetchFeed(feedUrl string, items chan<- *item) {
 
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		log.Printf("welp: bad response fetching %s (%d)", feedUrl, resp.StatusCode)
+		log.Printf("welp: bad response fetching %s (%d)", feedURL, resp.StatusCode)
 		return
 	}
 
 	var feed feed
 	if err := xml.NewDecoder(resp.Body).Decode(&feed); err != nil {
-		log.Printf("welp: %s isn't an rss feed", feedUrl)
+		log.Printf("welp: %s isn't an rss feed", feedURL)
 		return
 	}
 
@@ -201,12 +206,12 @@ type status struct {
 func downloadItem(item *item) status {
 	name := truncate(item.Title, 60)
 
-	downloadUrl, err := downloadUrl(item)
+	downloadURL, err := downloadURL(item)
 	if err != nil {
 		return status{name: name, err: err, msg: "bad url"}
 	}
 
-	request, err := http.NewRequest(http.MethodGet, downloadUrl.String(), nil)
+	request, err := http.NewRequest(http.MethodGet, downloadURL.String(), nil)
 	if err != nil {
 		return status{name: name, err: err, msg: "invalid download url"}
 	}
@@ -216,7 +221,7 @@ func downloadItem(item *item) status {
 	request = request.WithContext(ctx)
 
 	resp, err := http.DefaultClient.Do(request)
-	if urlErr, isUrlErr := err.(*url.Error); isUrlErr && urlErr.Timeout() || err == context.DeadlineExceeded {
+	if urlErr, isURLErr := err.(*url.Error); isURLErr && urlErr.Timeout() || err == context.DeadlineExceeded {
 		return status{name: name, err: err, msg: "timed out"}
 	}
 	if err != nil {
@@ -260,12 +265,12 @@ func downloadItem(item *item) status {
 	return status{name: name, filename: filename, downloaded: true}
 }
 
-func downloadUrl(item *item) (*url.URL, error) {
-	itemUrl, err := url.Parse(item.Enclosure.Url)
+func downloadURL(item *item) (*url.URL, error) {
+	itemURL, err := url.Parse(item.Enclosure.URL)
 	if err != nil {
 		return nil, err
 	}
-	return itemUrl, nil
+	return itemURL, nil
 }
 
 func truncate(s string, n int) string {
@@ -314,7 +319,7 @@ type channel struct {
 // an image in an rss feed
 type image struct {
 	XMLName xml.Name `xml:"image"`
-	Url     string   `xml:"url"`
+	URL     string   `xml:"url"`
 	Title   string   `xml:"title"`
 	Link    string   `xml:"link"`
 	Width   int      `xml:"width,omitempty"`
@@ -337,7 +342,7 @@ type item struct {
 // an rss feed, this is what you care about.
 type enclosure struct {
 	XMLName xml.Name `xml:"enclosure"`
-	Url     string   `xml:"url,attr"`
+	URL     string   `xml:"url,attr"`
 	Length  string   `xml:"length,attr"`
 	Type    string   `xml:"type,attr"`
 }
