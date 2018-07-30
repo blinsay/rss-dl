@@ -53,6 +53,10 @@ var (
 	itemTimeout time.Duration
 )
 
+var (
+	userAgent = fmt.Sprintf("rss-dl/%s", version.VERSION)
+)
+
 func init() {
 	log.SetFlags(0)
 
@@ -130,6 +134,7 @@ func fetchFeed(feedURL string, items chan<- *item) {
 	if err != nil {
 		panic(err)
 	}
+	request.Header.Set("User-Agent", userAgent)
 
 	ctx, cancel := context.WithTimeout(context.Background(), feedTimeout)
 	defer cancel()
@@ -228,6 +233,7 @@ func downloadItem(item *item) status {
 	if err != nil {
 		return status{name: name, err: err, msg: "invalid download url"}
 	}
+	request.Header.Set("User-Agent", userAgent)
 
 	ctx, cancel := context.WithTimeout(context.Background(), itemTimeout)
 	defer cancel()
