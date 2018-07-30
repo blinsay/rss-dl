@@ -33,8 +33,8 @@ install:
 	@go install -a $(GO_LDFLAGS) .
 
 define build_cross
-mkdir -p build/$(1)/$(2);
-GOOS=$(1) GOARCH=$(2) CGO_ENABLED=0 go build $(GO_LDFLAGS) -o build/$(1)/$(2)/$(NAME)-$(1)-$(2) .;
+mkdir -p build/;
+GOOS=$(1) GOARCH=$(2) CGO_ENABLED=0 go build $(GO_LDFLAGS) -o build/$(NAME)-$(1)-$(2) .;
 endef
 
 .PHONY: cross
