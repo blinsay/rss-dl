@@ -1,0 +1,7 @@
+language: go
+go:
+  - "1.10"
+before_install:
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/unused
+  - go get honnef.co/go/tools/cmd/staticcheck
