@@ -20,6 +20,11 @@ clean:
 	@$(RM) $(NAME)
 	@$(RM) -r build/
 
+.PHONY: tag
+tag:
+	git tag -a $(VERSION) -m $(VERSION)
+
+
 .PHONY: build
 build: $(NAME)
 
