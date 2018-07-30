@@ -4,13 +4,18 @@ A cli tool for downloading an entire RSS feed.
 
 #### installing
 
-use a working go toolchain:
+*Binaries*
+
+Prebuilt binaries are available on the [releases page](https://github.com/blinsay/rss-dl/releases).
+
+*From Source*
+
+Using a working Go toolchain:
 
 ```
 go get github.com/blinsay/rss-dl
 ```
 
-binaries coming soon to the releases page.
 
 #### usage
 
