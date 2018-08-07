@@ -3,6 +3,10 @@ PKG := github.com/blinsay/rss-dl
 
 VERSION := $(shell cat VERSION.txt)
 GITCOMMIT := $(shell git rev-parse --short HEAD)
+GITDIRY := $(shell git status --porcelain --untracked-files=no)
+ifneq ($(GITDIRY),)
+	GITCOMMIT := $(GITCOMMIT)-dirty
+endif
 
 GOOSARCHES := $(shell cat .goosarch)
 VERSION_FLAGS=-X $(PKG)/version.VERSION=$(VERSION) -X $(PKG)/version.GITCOMMIT=$(GITCOMMIT)
