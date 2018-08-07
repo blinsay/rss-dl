@@ -271,17 +271,35 @@ func downloadItem(item *item) status {
 	if err != nil {
 		return status{name: name, msg: "creating a tempfile failed", err: err, fatal: true}
 	}
-	if _, err := io.Copy(bufio.NewWriter(tempFile), bufio.NewReader(resp.Body)); err != nil {
+
+	if err := copyAndClose(tempFile, resp.Body); err != nil {
 		return status{name: name, msg: "download failed", err: err}
 	}
-	if err := os.Rename(tempFile.Name(), finalPath); err != nil {
-		return status{name: name, msg: "moving file failed", err: err, fatal: true}
-	}
-	if err := os.Chmod(finalPath, os.FileMode(0644)); err != nil {
-		return status{name: name, msg: "cmmod failed", err: err, fatal: true}
+
+	if err := moveAndChown(finalPath, tempFile.Name()); err != nil {
+		return status{name: name, msg: fmt.Sprintf("copying file to download dir failed"), err: err, fatal: true}
 	}
 
 	return status{name: name, filename: filename, downloaded: true}
+}
+
+func copyAndClose(dst io.WriteCloser, src io.Reader) error {
+	bufDst, bufSrc := bufio.NewWriter(dst), bufio.NewReader(src)
+
+	if _, err := io.Copy(bufDst, bufSrc); err != nil {
+		return err
+	}
+	if err := bufDst.Flush(); err != nil {
+		return err
+	}
+	return dst.Close()
+}
+
+func moveAndChown(dstPath, srcPath string) error {
+	if err := os.Rename(srcPath, dstPath); err != nil {
+		return err
+	}
+	return os.Chmod(dstPath, os.FileMode(0644))
 }
 
 func downloadURL(item *item) (*url.URL, error) {
